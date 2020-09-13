@@ -1,7 +1,9 @@
-import 'package:chat/models/usuario.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
+import 'package:chat/models/usuario.dart';
+import 'package:chat/services/auth_service.dart';
 class UsuariosPage extends StatefulWidget {
   @override
   _UsuariosPageState createState() => _UsuariosPageState();
@@ -12,25 +14,32 @@ class _UsuariosPageState extends State<UsuariosPage> {
   RefreshController _refreshController = RefreshController(initialRefresh: false);
 
   final usuarios = [
-    Usuario(uuid: '1', nombre: 'Maria', email: 'mari@gmail.com', online: true),
-    Usuario(uuid: '2', nombre: 'Sofia', email: 'sofi@gmail.com', online: true),
-    Usuario(
+    UsuarioDb(uuid: '1', nombre: 'Maria', email: 'mari@gmail.com', online: true),
+    UsuarioDb(uuid: '2', nombre: 'Sofia', email: 'sofi@gmail.com', online: true),
+    UsuarioDb(
         uuid: '3', nombre: 'Daniel', email: 'dany@gmail.com', online: false),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+    final usuario = authService.usuario;
+
     return Scaffold(
         appBar: AppBar(
           title: Text(
-            'Mi Nombre',
+            usuario.nombre,
             style: TextStyle(color: Colors.black54),
           ),
           elevation: 1,
           backgroundColor: Colors.white,
           leading: IconButton(
             icon: Icon(Icons.exit_to_app, color: Colors.black87),
-            onPressed: () {},
+            onPressed: () {
+              // TODO: Desconectar el socket server
+              AuthService.deleteToken();
+              Navigator.pushReplacementNamed(context, 'login');
+            },
           ),
           actions: [
             Container(
@@ -60,7 +69,7 @@ class _UsuariosPageState extends State<UsuariosPage> {
           itemCount: usuarios.length);
   }
 
-  ListTile _usuarioListTile(Usuario usuario) {
+  ListTile _usuarioListTile(UsuarioDb usuario) {
     return ListTile(
       title: Text(usuario.nombre),
       subtitle: Text(usuario.email),

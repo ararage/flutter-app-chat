@@ -1,8 +1,13 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import 'package:chat/widgets/boton_azul.dart';
 import 'package:chat/widgets/labels.dart';
 import 'package:chat/widgets/logo.dart';
-import 'package:flutter/material.dart';
 import 'package:chat/widgets/custom_input.dart';
+
+import 'package:chat/services/auth_service.dart';
+import 'package:chat/helpers/show_alert.dart';
 
 class RegisterPage extends StatelessWidget {
   @override
@@ -22,10 +27,9 @@ class RegisterPage extends StatelessWidget {
                   ),
                   _Form(),
                   Labels(
-                    titulo: '¿Ya tienes cuenta?',
-                    subTitulo: 'Ingresa ahora',
-                    ruta: 'login'
-                  ),
+                      titulo: '¿Ya tienes cuenta?',
+                      subTitulo: 'Ingresa ahora',
+                      ruta: 'login'),
                 ],
               ),
             ),
@@ -40,13 +44,14 @@ class _Form extends StatefulWidget {
 }
 
 class __FormState extends State<_Form> {
-
   final nameCtrl = TextEditingController();
   final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
+    final authService =
+        Provider.of<AuthService>(context); // Avoid Redraw with listen: false
     return Container(
       margin: EdgeInsets.only(top: 40),
       padding: EdgeInsets.symmetric(horizontal: 50),
@@ -71,12 +76,21 @@ class __FormState extends State<_Form> {
             isPassword: true,
           ),
           BotonAzul(
-            text: 'Ingrese',
-            onPressed: () {
-              print(this.emailCtrl.text);
-              print(this.passCtrl.text);
-            },
-          ),
+              text: 'Crear cuenta',
+              onPressed: authService.autenticando
+                  ? null
+                  : () async {
+                      FocusScope.of(context).unfocus();
+                      final registerOk = await authService.register(
+                          nameCtrl.text.trim(),
+                          emailCtrl.text.trim(),
+                          passCtrl.text.trim());
+                      if (registerOk == true) {
+                        Navigator.pushReplacementNamed(context, 'usuarios');
+                      } else {
+                        showCustomAlert(context, 'Registro Incorrecto',registerOk);
+                      }
+                    }),
         ],
       ),
     );

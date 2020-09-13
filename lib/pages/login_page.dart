@@ -1,8 +1,11 @@
+import 'package:provider/provider.dart';
 import 'package:chat/widgets/boton_azul.dart';
 import 'package:chat/widgets/labels.dart';
 import 'package:chat/widgets/logo.dart';
 import 'package:flutter/material.dart';
 import 'package:chat/widgets/custom_input.dart';
+import 'package:chat/services/auth_service.dart';
+import 'package:chat/helpers/show_alert.dart';
 
 class LoginPage extends StatelessWidget {
   @override
@@ -22,10 +25,9 @@ class LoginPage extends StatelessWidget {
                   ),
                   _Form(),
                   Labels(
-                    titulo: '¿No tienes cuenta?',
-                    subTitulo: 'Crea una ahora',
-                    ruta: 'register'
-                  ),
+                      titulo: '¿No tienes cuenta?',
+                      subTitulo: 'Crea una ahora',
+                      ruta: 'register'),
                   Text(
                     'Términos y condiciones de uso',
                     style: TextStyle(fontWeight: FontWeight.w200),
@@ -49,6 +51,8 @@ class __FormState extends State<_Form> {
 
   @override
   Widget build(BuildContext context) {
+    final authService =
+        Provider.of<AuthService>(context); // Avoid Redraw with listen: false
     return Container(
       margin: EdgeInsets.only(top: 40),
       padding: EdgeInsets.symmetric(horizontal: 50),
@@ -68,10 +72,19 @@ class __FormState extends State<_Form> {
           ),
           BotonAzul(
             text: 'Ingrese',
-            onPressed: () {
-              print(this.emailCtrl.text);
-              print(this.passCtrl.text);
-            },
+            onPressed: authService.autenticando
+                ? null
+                : () async {
+                  FocusScope.of(context).unfocus();
+                  final loginOk = await authService.login(
+                        emailCtrl.text.trim(), passCtrl.text.trim());
+                  if (loginOk){
+                    // TODO: Navigate to the next page
+                    Navigator.pushReplacementNamed(context, 'usuarios');
+                  }else{
+                    showCustomAlert(context, 'Login Incorrecto', 'Revise sus credenciales nuevamente');
+                  }
+                },
           ),
         ],
       ),
