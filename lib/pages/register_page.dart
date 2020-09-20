@@ -6,7 +6,9 @@ import 'package:chat/widgets/labels.dart';
 import 'package:chat/widgets/logo.dart';
 import 'package:chat/widgets/custom_input.dart';
 
+import 'package:chat/services/socket_service.dart';
 import 'package:chat/services/auth_service.dart';
+
 import 'package:chat/helpers/show_alert.dart';
 
 class RegisterPage extends StatelessWidget {
@@ -52,6 +54,8 @@ class __FormState extends State<_Form> {
   Widget build(BuildContext context) {
     final authService =
         Provider.of<AuthService>(context); // Avoid Redraw with listen: false
+    final socketService = Provider.of<SocketService>(context);
+    
     return Container(
       margin: EdgeInsets.only(top: 40),
       padding: EdgeInsets.symmetric(horizontal: 50),
@@ -86,6 +90,7 @@ class __FormState extends State<_Form> {
                           emailCtrl.text.trim(),
                           passCtrl.text.trim());
                       if (registerOk == true) {
+                        socketService.connect();
                         Navigator.pushReplacementNamed(context, 'usuarios');
                       } else {
                         showCustomAlert(context, 'Registro Incorrecto',registerOk);
